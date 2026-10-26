@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Document Processing</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Серо-чёрная палитра */
+            --primary: #3f3f46;
+            --primary-hover: #52525b;
+            --secondary: #a1a1aa;
+            --bg-color: #09090b;
+            --container-bg: #18181b;
+            --text-main: #f4f4f5;
+            --text-muted: #a1a1aa;
+            --glass-bg: rgba(24, 24, 27, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent: #d4d4d8;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(63, 63, 70, 0.15), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(161, 161, 170, 0.1), transparent 25%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Container */
+        .container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem 2rem;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+            animation: fadeUpIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ffffff, #71717a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        /* Drag & Drop Zone */
+        .drop-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 2.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            background: rgba(255, 255, 255, 0.01);
+            display: block;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.03);
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+        }
+
+        .drop-zone svg {
+            width: 48px;
+            height: 48px;
+            fill: var(--text-muted);
+            margin-bottom: 1rem;
+            transition: fill 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .drop-zone:hover svg,
+        .drop-zone.dragover svg {
+            fill: var(--accent);
+            transform: translateY(-8px) scale(1.1);
+        }
+
+        .drop-zone span {
+            display: block;
+            color: var(--text-muted);
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .drop-zone:hover span {
+            color: var(--text-main);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-name {
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--accent);
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .file-name.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Options Panel --- */
+        .options-panel {
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .options-panel.visible {
+            max-height: 200px;
+            opacity: 1;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s ease;
+            opacity: 1;
+            max-height: 60px;
+            overflow: hidden;
+        }
+
+        /* Класс для плавного скрытия лимита страниц */
+        .input-row.hidden-row {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            opacity: 0;
+            margin-top: -15px; /* компенсируем gap */
+            border: none;
+        }
+
+        .input-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .options-label {
+            font-size: 0.95rem;
+            color: var(--text-main);
+            font-weight: 500;
+            text-align: left;
+            flex-grow: 1;
+        }
+
+        /* Инпуты и селекты */
+        .custom-input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .pages-input {
+            width: 80px;
+        }
+
+        .custom-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .custom-input option {
+            background: var(--container-bg);
+            color: var(--text-main);
+        }
+
+        /* Submit Button */
+        button {
+            margin-top: 1.5rem;
+            background: linear-gradient(135deg, #52525b, #27272a);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        button.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        button.active:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #71717a, #3f3f46);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-top: 2rem;
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #71717a, #ffffff);
+            border-radius: 4px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        .status-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            animation: pulse 2s infinite;
+        }
+
+        /* Error */
+        .error-msg {
+            color: var(--error);
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            display: none;
+            font-weight: 600;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* Download Section */
+        .download-section {
+            display: none;
+            margin-top: 1.5rem;
+            animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .btn-download {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            color: #000;
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+            pointer-events: auto;
+            opacity: 1;
+        }
+
+        .btn-download:hover {
+            background: #ffffff;
+            color: #000;
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.4);
+        }
+
+        .btn-reset {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            box-shadow: none;
+            opacity: 1;
+            pointer-events: auto;
+            margin-top: 1rem;
+        }
+
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Animations */
+        @keyframes fadeUpIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Document AI</h1>
+        <p>Интеллектуальный парсинг документов</p>
+
+        <label class="drop-zone" id="drop-zone" for="file-input">
+            <svg viewBox="0 0 24 24">
+                <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM6 20V4h5v7h7v9H6z" />
+            </svg>
+            <span id="drop-text">Перетащите PDF сюда или нажмите</span>
+            <input type="file" id="file-input" accept="application/pdf">
+        </label>
+
+        <div class="file-name" id="file-name"></div>
+        <div class="error-msg" id="error-msg"></div>
+
+        <div class="options-panel" id="options-panel">
+            <div class="input-row">
+                <label for="doc-type" class="options-label">Тип документа:</label>
+                <select id="doc-type" class="custom-input">
+                    <option value="passport-rngs">Паспорт РНГС</option>
+                    <option value="drawing">Чертеж</option>
+                    <option value="passport-compensators">Паспорт Компенсатор</option>
+                </select>
+            </div>
+            
+            <div class="input-row" id="limit-row">
+                <label for="pages-limit" class="options-label">Лимит страниц (0 = все):</label>
+                <input type="number" id="pages-limit" min="0" value="0" class="custom-input pages-input">
+            </div>
+            <div class="input-row hidden-row" id="compensators-second-row">
+                <label for="file-input-gost" class="options-label">Второй PDF (ГОСТ / материалы):</label>
+                <input type="file" id="file-input-gost" accept="application/pdf" class="custom-input">
+            </div>
+        </div>
+
+        <button id="submit-btn">Обработать документ</button>
+
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progress-bar"></div>
+            </div>
+            <div class="status-text" id="status-text">Загрузка на сервер...</div>
+        </div>
+
+        <div class="download-section" id="download-section">
+            <a href="#" id="download-link" download>
+                <button class="btn-download">Скачать JSON результат</button>
+            </a>
+            <button id="reset-btn" class="btn-reset">Обработать другой документ</button>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const fileNameDisplay = document.getElementById('file-name');
+        const submitBtn = document.getElementById('submit-btn');
+        const errorMsg = document.getElementById('error-msg');
+
+        const progressContainer = document.getElementById('progress-container');
+        const progressBar = document.getElementById('progress-bar');
+        const statusText = document.getElementById('status-text');
+
+        const downloadSection = document.getElementById('download-section');
+        const downloadLink = document.getElementById('download-link');
+        const resetBtn = document.getElementById('reset-btn');
+
+        const docTypeSelect = document.getElementById('doc-type');
+        const limitRow = document.getElementById('limit-row');
+
+        let selectedFile = null;
+        let selectedFileGost = null;
+
+        // --- Управление видимостью лимита страниц ---
+        const compensatorsSecondRow = document.getElementById('compensators-second-row');
+        const fileInputGost = document.getElementById('file-input-gost');
+
+        docTypeSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'passport-compensators') {
+                limitRow.classList.add('hidden-row');
+                compensatorsSecondRow.classList.remove('hidden-row');
+            } else {
+                limitRow.classList.remove('hidden-row');
+                compensatorsSecondRow.classList.add('hidden-row');
+            }
+        });
+
+        // --- Обработка кнопки возврата ---
+        resetBtn.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            fileNameDisplay.classList.remove('visible');
+            errorMsg.style.display = 'none';
+            downloadSection.style.display = 'none';
+            progressContainer.style.display = 'none';
+            dropZone.style.display = 'block';
+            submitBtn.style.display = 'none';
+            submitBtn.classList.remove('active');
+            submitBtn.textContent = 'Обработать документ';
+            document.getElementById('options-panel').classList.remove('visible');
+            
+            // Сброс значений
+            document.getElementById('pages-limit').value = 0;
+            docTypeSelect.value = 'passport-rngs';
+            limitRow.classList.remove('hidden-row');
+            compensatorsSecondRow.classList.add('hidden-row');
+            selectedFileGost = null;
+            fileInputGost.value = '';
+        });
+
+        fileInputGost.addEventListener('change', function () {
+            const f = this.files && this.files[0];
+            if (!f) {
+                selectedFileGost = null;
+                return;
+            }
+            if (f.type !== "application/pdf" && !f.name.toLowerCase().endsWith(".pdf")) {
+                selectedFileGost = null;
+                this.value = '';
+                showError("Второй файл: только PDF.");
+                return;
+            }
+            selectedFileGost = f;
+        });
+
+        // --- Обработка Drag & Drop ---
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+
+        fileInput.addEventListener('change', function () {
+            handleFiles(this.files);
+        });
+
+        function handleFiles(files) {
+            errorMsg.style.display = 'none';
+            downloadSection.style.display = 'none';
+            progressContainer.style.display = 'none';
+
+            if (files.length === 0) return;
+
+            const file = files[0];
+
+            if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+                showError("Ошибка: Пожалуйста, загрузите только PDF файл.");
+                selectedFile = null;
+                submitBtn.classList.remove('active');
+                fileNameDisplay.classList.remove('visible');
+                document.getElementById('options-panel').classList.remove('visible');
+                return;
+            }
+
+            selectedFile = file;
+            fileNameDisplay.textContent = `Выбран файл: ${file.name}`;
+            fileNameDisplay.classList.add('visible');
+
+            document.getElementById('options-panel').classList.add('visible');
+
+            submitBtn.classList.add('active');
+            submitBtn.style.display = 'block';
+            submitBtn.textContent = 'Обработать документ';
+            dropZone.style.display = 'block';
+        }
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.style.display = 'block';
+            
+            // Перезапуск анимации тряски
+            errorMsg.style.animation = 'none';
+            errorMsg.offsetHeight; 
+            errorMsg.style.animation = 'shake 0.4s ease-in-out';
+        }
+
+        function openJobWebSocket(jobId, onPayload) {
+            const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+            const url = new URL(`${proto}//${window.location.host}/pipelines/ws`);
+            url.searchParams.set("job_id", String(jobId));
+            const sock = new WebSocket(url.toString());
+            sock.onmessage = (event) => {
+                try {
+                    const payload = JSON.parse(event.data);
+                    if (typeof onPayload === "function") onPayload(payload);
+                } catch (_) { /* ignore */ }
+            };
+            return sock;
+        }
+
+        // --- Отправка данных ---
+        submitBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            const docType = docTypeSelect.value;
+            if (docType === 'passport-compensators' && !selectedFileGost) {
+                showError("Для паспорта компенсатора выберите второй PDF (ГОСТ / материалы).");
+                return;
+            }
+
+            errorMsg.style.display = 'none';
+
+            submitBtn.style.display = 'none';
+            dropZone.style.display = 'none';
+            document.getElementById('options-panel').classList.remove('visible');
+
+            progressContainer.style.display = 'flex';
+            progressContainer.offsetHeight;
+            progressContainer.style.opacity = '1';
+
+            progressBar.style.width = '0%';
+            statusText.textContent = 'Отправка на сервер...';
+            statusText.style.color = 'var(--text-main)';
+
+            const formData = new FormData();
+            let targetUrl = '';
+
+            if (docType === 'passport-rngs') {
+                targetUrl = '/api/recognize-passport-rngs';
+                formData.append('file', selectedFile);
+                formData.append('pages_limit', parseInt(document.getElementById('pages-limit').value) || 0);
+            } else if (docType === 'drawing') {
+                targetUrl = '/api/recognize-drawing';
+                formData.append('file', selectedFile);
+                formData.append('pages_limit', parseInt(document.getElementById('pages-limit').value) || 0);
+            } else if (docType === 'passport-compensators') {
+                targetUrl = '/api/recognize-passport-compensators';
+                formData.append('diameter_file', selectedFile);
+                formData.append('gost_materials_file', selectedFileGost);
+            }
+
+            let sock = null;
+
+            const finishUiError = () => {
+                if (sock) {
+                    sock.onclose = null;
+                    sock.close();
+                    sock = null;
+                }
+                progressContainer.style.display = 'none';
+                showError('Ошибка сервера: Не удалось обработать документ.');
+                submitBtn.style.display = 'block';
+                submitBtn.textContent = 'Попробовать снова';
+                dropZone.style.display = 'block';
+            };
+
+            try {
+                const response = await fetch(targetUrl, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include',
+                });
+
+                if (!response.ok) {
+                    finishUiError();
+                    return;
+                }
+
+                const data = await response.json();
+                const jobId = data.job_id;
+                if (jobId == null) {
+                    finishUiError();
+                    return;
+                }
+
+                statusText.textContent = 'Распознавание...';
+
+                sock = openJobWebSocket(jobId, (payload) => {
+                    const job = payload.job;
+                    if (!job) return;
+
+                    const p = Number(job.progress);
+                    if (Number.isFinite(p)) {
+                        progressBar.style.width = `${Math.min(100, Math.max(0, p))}%`;
+                    }
+
+                    const st = job.stats || {};
+                    if (st.current_file) {
+                        statusText.textContent = `Распознавание: ${st.current_file}`;
+                    }
+
+                    if (st.files_total && (st.files_processed != null || st.processed_files != null)) {
+                        const fp = st.files_processed != null ? st.files_processed : st.processed_files;
+                        statusText.textContent = `Файлы ${fp} / ${st.files_total}${st.current_file ? ` · ${st.current_file}` : ''}`;
+                    }
+
+                    if (job.status === 'error') {
+                        sock.onclose = null;
+                        sock.close();
+                        sock = null;
+                        progressContainer.style.display = 'none';
+                        showError(job.error || 'Ошибка обработки.');
+                        submitBtn.style.display = 'block';
+                        submitBtn.textContent = 'Попробовать снова';
+                        dropZone.style.display = 'block';
+                        return;
+                    }
+
+                    if (job.status === 'done') {
+                        sock.onclose = null;
+                        sock.close();
+                        sock = null;
+                        progressBar.style.width = '100%';
+                        statusText.textContent = 'Готово! Документ успешно обработан.';
+                        statusText.style.color = 'var(--success)';
+
+                        const stem = st.ocr_download_stem || '';
+                        setTimeout(() => {
+                            progressContainer.style.display = 'none';
+                            downloadSection.style.display = 'block';
+                            if (stem) {
+                                downloadLink.href = `/api/download/${encodeURIComponent(stem)}`;
+                                downloadLink.download = `${stem}.json`;
+                            } else {
+                                downloadLink.href = '#';
+                                downloadLink.removeAttribute('download');
+                            }
+                        }, 600);
+                    }
+                });
+            } catch (err) {
+                finishUiError();
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="DocPipeAI">
+  <defs>
+    <linearGradient id="dpbg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="url(#dpbg)"/>
+  <path d="M9 7h9l3 3v15H9V7z" fill="#ffffff" fill-opacity="0.22"/>
+  <path d="M12 13h7M12 17h5M12 21h7" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"/>
+  <path d="M21 11h6a2 2 0 012 2v4a2 2 0 01-2 2h-6" fill="none" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="26.5" cy="14" r="2" fill="#ffffff"/>
+</svg>

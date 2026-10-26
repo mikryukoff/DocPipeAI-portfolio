@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Паспорта трубопроводов</title>
+    <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" sizes="any">
+    <link rel="shortcut icon" href="/favicon.svg?v=2" type="image/svg+xml">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<div class="container">
+    <section id="authPage" class="auth-page">
+        <section class="card" id="authSection">
+            <h1 data-i18n="authPage.mainTitle"></h1>
+            <h2 data-i18n="authPage.loginTitle"></h2>
+            <p class="section-help" data-i18n="authPage.help"></p>
+            <div class="next-step" data-i18n="authPage.nextStep"></div>
+            <div id="authStatus" class="status-text"></div>
+            <div class="auth-form">
+                <input type="text" id="loginUsername" data-i18n-placeholder="authPage.placeholderUsername" placeholder="">
+                <div class="password-field">
+                    <input type="password" id="loginPassword" data-i18n-placeholder="authPage.placeholderPassword" placeholder="" autocomplete="current-password">
+                    <button type="button" class="password-toggle" id="loginPasswordToggle" aria-pressed="false">
+                        <svg class="password-toggle__icon password-toggle__icon--show" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <svg class="password-toggle__icon password-toggle__icon--hide hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    </button>
+                </div>
+            </div>
+            <div class="inline-actions">
+                <button id="loginBtn" class="primary-action" data-i18n="authPage.loginButton"></button>
+            </div>
+            <div id="authMsg" class="status-banner" data-tone="info"></div>
+
+            <div id="forcePasswordSection" class="hidden">
+                <h3 data-i18n="authPage.forcePasswordTitle"></h3>
+                <p class="section-help" data-i18n="authPage.forcePasswordHelp"></p>
+                <div class="password-field">
+                    <input type="password" id="newPasswordInput" data-i18n-placeholder="authPage.placeholderNewPassword" placeholder="" autocomplete="new-password">
+                    <button type="button" class="password-toggle" id="newPasswordToggle" aria-pressed="false">
+                        <svg class="password-toggle__icon password-toggle__icon--show" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <svg class="password-toggle__icon password-toggle__icon--hide hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    </button>
+                </div>
+                <button id="changePasswordBtn" class="primary-action" data-i18n="authPage.changePasswordButton"></button>
+                <div id="changePasswordMsg" class="status-banner" data-tone="info"></div>
+            </div>
+        </section>
+    </section>
+
+    <div id="appContent" class="hidden">
+        <div class="workspace-topbar">
+            <div>
+                <div class="workspace-title" data-i18n="layout.workspaceTitle"></div>
+                <div id="workspaceUserInfo" class="status-text"></div>
+            </div>
+            <button id="logoutMainBtn" class="btn-muted" data-i18n="layout.logout"></button>
+        </div>
+        <div class="workspace">
+            <aside class="sidebar">
+                <div class="sidebar-nav">
+                    <div class="sidebar-title" data-i18n="layout.sidebarTitle"></div>
+                    <button id="navImportBtn" class="nav-btn" data-i18n="layout.navImport"></button>
+                    <button id="navPipelinesBtn" class="nav-btn" data-i18n="layout.navPipelines"></button>
+                    <button id="navSettingsBtn" class="nav-btn hidden" data-i18n="layout.navSettings"></button>
+                    <button id="navAdminBtn" class="nav-btn hidden" data-i18n="layout.navAdmin"></button>
+                </div>
+                <div id="sidebarChecklist" class="sidebar-checklist-panel">
+                    <div class="sidebar-checklist-title" data-i18n="checklist.sidebarTitle"></div>
+                    <p class="section-help sidebar-checklist-help" data-i18n="checklist.sidebarHelp"></p>
+                    <div id="checklistSidebarMsg" class="status-banner hidden" data-tone="info"></div>
+                    <div id="checklistItems" class="checklist-items" role="list"></div>
+                    <div id="checklistEmpty" class="section-help hidden" data-i18n="checklist.empty"></div>
+                    <button type="button" id="checklistResetBtn" class="btn-muted" data-i18n="checklist.resetButton"></button>
+                </div>
+            </aside>
+
+            <main class="content">
+                <section class="card page-header-card">
+                    <h2 id="pageTitle"></h2>
+                    <p id="pageSubtitle" class="section-help"></p>
+                    <div id="pageNextStep" class="next-step"></div>
+                </section>
+
+                <section id="pageImport" class="page hidden">
+                    <section class="card">
+                        <h3 data-i18n="importPage.pdfCardTitle"></h3>
+                        <p class="section-help" data-i18n="importPage.pdfCardHelp"></p>
+                        <!-- При необходимости вернуть выбор типа PDF: label+select pdfImportKindSelect и ключи importPage.pdfKind* в messages.js -->
+                        <input type="file" id="pdfInput" accept=".pdf,.zip,.rar" multiple>
+                        <div class="inline-actions">
+                            <button id="uploadBtn" class="primary-action" data-i18n="importPage.uploadPdfButton"></button>
+                        </div>
+                        <div id="pdfUploadMsg" class="status-banner" data-tone="info"></div>
+                    </section>
+
+                    <section class="card">
+                        <h3 data-i18n="importPage.excelCardTitle"></h3>
+                        <p class="section-help" data-i18n="importPage.excelCardHelp"></p>
+                        <input type="file" id="excelInput" accept=".xlsx,.xlsm,.xls,.zip,.rar" multiple>
+                        <div class="inline-actions">
+                            <button id="uploadExcelBtn" class="primary-action" data-i18n="importPage.uploadExcelButton"></button>
+                        </div>
+                        <div id="excelUploadMsg" class="status-banner" data-tone="info"></div>
+                    </section>
+
+                    <section class="card">
+                        <h3 data-i18n="importPage.wordCardTitle"></h3>
+                        <p class="section-help" data-i18n="importPage.wordCardHelp"></p>
+                        <!-- При необходимости вернуть выбор типа Word: восстановить select#wordImportKindSelect -->
+                        <input type="file" id="wordInput" accept=".docx,.zip,.rar" multiple>
+                        <div class="inline-actions">
+                            <button id="uploadWordBtn" class="primary-action" data-i18n="importPage.uploadWordButton"></button>
+                        </div>
+                        <div id="wordUploadMsg" class="status-banner" data-tone="info"></div>
+                    </section>
+
+                    <section class="card card-import-check">
+                        <h3 data-i18n="importPage.fileCheckTitle"></h3>
+                        <p class="section-help" data-i18n="importPage.fileCheckHelp"></p>
+                        <input type="file" id="pdfCheckInput" accept=".pdf">
+                        <div class="inline-actions">
+                            <button id="pdfCheckBtn" class="btn-secondary" data-i18n="importPage.fileCheckButton"></button>
+                        </div>
+                        <div id="pdfCheckMsg" class="status-banner" data-tone="info"></div>
+                        <div id="pdfCheckResult" class="pdf-check-result hidden">
+                            <div class="pdf-check-result-head">
+                                <span class="pdf-check-result-label" data-i18n="importPage.fileCheckResultLabel"></span>
+                                <button type="button" id="pdfCheckCloseBtn" class="btn-muted" data-i18n="importPage.fileCheckClose"></button>
+                            </div>
+                            <div class="pdf-check-result-grid">
+                                <div>
+                                    <h4 data-i18n="importPage.fileCheckParamsTitle"></h4>
+                                    <div id="pdfCheckParamsWrap" class="pdf-check-table-wrap"></div>
+                                </div>
+                                <div>
+                                    <h4 data-i18n="importPage.fileCheckSpecTitle"></h4>
+                                    <div id="pdfCheckSpecWrap" class="pdf-check-table-wrap"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card hidden" id="jobSection">
+                        <div class="job-panel-header">
+                            <h3 data-i18n="jobPanel.title"></h3>
+                            <button id="jobCloseBtn" type="button" class="btn-muted hidden" data-i18n="jobPanel.closeButton"></button>
+                        </div>
+                        <p class="section-help" data-i18n="jobPanel.help"></p>
+                        <div id="uploadLockMsg" class="status-banner" data-tone="warn"></div>
+                        <div class="inline-actions">
+                            <button id="jobCancelBtn" type="button" class="hidden btn-danger" data-i18n="jobPanel.cancelButton"></button>
+                        </div>
+                        <div id="jobLiveIndicator" class="job-live-indicator hidden" role="status" aria-live="polite">
+                            <span class="spinner" aria-hidden="true"></span>
+                            <span id="jobLiveText"></span>
+                        </div>
+
+                        <div class="progress-container">
+                            <div class="progress-bar" id="progressBar"></div>
+                        </div>
+                        <div id="progressText"></div>
+                        <div id="jobStatusText" class="status-text"></div>
+
+                        <div class="stats">
+                            <div><span data-i18n="jobPanel.statFiles"></span> <b id="statPages"></b></div>
+                            <div><span data-i18n="jobPanel.statPipelines"></span> <b id="statPipelines"></b></div>
+                            <div><span data-i18n="jobPanel.statSpecs"></span> <b id="statSpecs"></b></div>
+                            <div><span data-i18n="jobPanel.statTime"></span> <b id="statTime"></b> <span data-i18n="jobPanel.statTimeUnit"></span></div>
+                        </div>
+
+                        <div class="status-banner" id="jobError" data-tone="error"></div>
+                        <div id="jobWarnings" class="status-banner" data-tone="warn"></div>
+                        <div id="invalidSection" class="invalid-section hidden">
+                            <div id="invalidSummary" class="invalid-summary"></div>
+                            <button id="invalidToggleBtn" type="button" class="hidden"></button>
+                            <ul id="invalidList" class="invalid-list"></ul>
+                        </div>
+                        <div id="undefinedSpecSection" class="invalid-section hidden">
+                            <div id="undefinedSpecSummary" class="invalid-summary"></div>
+                            <div id="undefinedSpecList"></div>
+                            <button id="saveSpecSectionsBtn" type="button" class="btn-secondary" data-i18n="jobPanel.saveSpecSectionsButton"></button>
+                            <div id="saveSpecSectionsMsg" class="status-banner" data-tone="info"></div>
+                        </div>
+                        <div id="jobEmbedmentPendingSection" class="invalid-section hidden">
+                            <div id="jobEmbedmentPendingSummary" class="invalid-summary"></div>
+                            <div id="jobEmbedmentPendingList" class="embedments-groups"></div>
+                            <div id="jobEmbedmentPendingMsg" class="status-banner" data-tone="info"></div>
+                        </div>
+
+                        <section class="activity-log" id="jobActivityLog">
+                            <h4 data-i18n="jobPanel.activityLogTitle"></h4>
+                            <ul id="activityLogList" class="activity-log-list"></ul>
+                        </section>
+                    </section>
+                </section>
+
+                <section id="pagePipelines" class="page hidden">
+                    <section class="card">
+                        <div class="pipelines-toolbar">
+                            <input id="pipelinesSearchInput" type="text" placeholder="">
+                            <div class="inline-actions">
+                                <button id="pipelinesSelectAllBtn" type="button" class="btn-secondary"></button>
+                                <button id="pipelinesClearSelectionBtn" type="button" class="btn-muted"></button>
+                                <button id="pipelinesDownloadSelectedBtn" type="button" class="primary-action"></button>
+                            </div>
+                            <div id="pipelinesSelectedCount" class="status-text"></div>
+                        </div>
+                        <div id="pipelinesMsg" class="status-banner" data-tone="info"></div>
+                        <div id="pipelinesEmpty" class="empty-state hidden"></div>
+                        <ul id="pipelinesList"></ul>
+                    </section>
+
+                </section>
+
+                <section id="pageSettings" class="page hidden">
+                    <section class="card admin-panel">
+                        <h3 data-i18n="settingsPage.cardTitle"></h3>
+                        <p class="section-help" data-i18n="settingsPage.cardHelp"></p>
+                        <div class="settings-file-row">
+                            <select id="settingsConfigFileSelect">
+                                <option value="" data-i18n="settingsPage.selectPlaceholder"></option>
+                            </select>
+                            <button type="button" id="settingsReloadBtn" class="btn-secondary" data-i18n="settingsPage.reloadButton"></button>
+                        </div>
+                        <div id="settingsPageMsg" class="status-banner" data-tone="info"></div>
+                        <div id="settingsFileMeta" class="settings-file-meta hidden">
+                            <div id="settingsSelectedTitle" class="settings-file-title"></div>
+                            <p id="settingsFileHint" class="section-help settings-file-hint"></p>
+                        </div>
+                        <div id="settingsEditorHost" class="settings-editor-host"></div>
+                        <div class="inline-actions">
+                            <button type="button" id="settingsSaveBtn" class="primary-action" data-i18n="settingsPage.saveButton"></button>
+                        </div>
+                    </section>
+                    <section class="card admin-panel">
+                        <h3 data-i18n="settingsPage.embedmentsTitle"></h3>
+                        <div class="settings-file-row settings-embedments-toolbar">
+                            <input type="search" id="settingsEmbedmentsSearch" class="settings-embedments-search" data-i18n-placeholder="settingsPage.embedmentsSearchPlaceholder" placeholder="" autocomplete="off">
+                            <button type="button" id="settingsEmbedmentsReload" class="btn-secondary" data-i18n="settingsPage.refreshEmbedments"></button>
+                        </div>
+                        <div id="settingsEmbedmentsMsg" class="status-banner" data-tone="info"></div>
+                        <div id="settingsEmbedmentsContainer" class="settings-embedments-container"></div>
+                    </section>
+                </section>
+
+                <section id="pageAdmin" class="page hidden">
+                    <div id="adminSection" class="admin-workspace">
+                        <div id="adminMsg" class="status-banner" data-tone="info"></div>
+
+                        <section class="card admin-panel" id="adminChecklistCard">
+                            <h3 data-i18n="adminPage.checklistBlockTitle"></h3>
+                            <p class="section-help" data-i18n="adminPage.checklistBlockHelp"></p>
+                            <div class="admin-form-row admin-form-row--checklist">
+                                <input type="text" id="adminChecklistNewTitle" maxlength="500" data-i18n-placeholder="adminPage.checklistPlaceholderTitle" placeholder="">
+                                <button type="button" id="adminChecklistAddBtn" class="btn-secondary" data-i18n="adminPage.checklistAddButton"></button>
+                            </div>
+                            <div id="adminChecklistMsg" class="status-banner" data-tone="info"></div>
+                            <table class="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th data-i18n="adminPage.checklistTableOrder"></th>
+                                        <th data-i18n="adminPage.checklistTableTitle"></th>
+                                        <th data-i18n="adminPage.tableHeaderActions"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminChecklistBody"></tbody>
+                            </table>
+                        </section>
+
+                        <section class="card admin-panel">
+                            <h3 data-i18n="adminPage.usersBlockTitle"></h3>
+                            <div class="admin-form-row">
+                                <input type="text" id="adminNewUsername" data-i18n-placeholder="adminPage.placeholderNewUsername" placeholder="">
+                                <select id="adminNewRole">
+                                    <option value="engineer" data-i18n="roles.engineer"></option>
+                                    <option value="demo" data-i18n="roles.demo"></option>
+                                    <option value="admin" data-i18n="roles.admin"></option>
+                                </select>
+                                <label class="admin-active-checkbox"><input type="checkbox" id="adminNewActive" checked> <span data-i18n="adminPage.labelActive"></span></label>
+                                <button type="button" id="adminCreateUserBtn" class="primary-action" data-i18n="adminPage.createUserButton"></button>
+                            </div>
+                            <div id="adminUsersMsg" class="status-banner" data-tone="info"></div>
+                            <table class="admin-table">
+                                <thead>
+                                <tr>
+                                    <th data-i18n="adminPage.tableHeaderId"></th>
+                                    <th data-i18n="adminPage.tableHeaderUsername"></th>
+                                    <th data-i18n="adminPage.tableHeaderRole"></th>
+                                    <th data-i18n="adminPage.tableHeaderActive"></th>
+                                    <th data-i18n="adminPage.tableHeaderActions"></th>
+                                </tr>
+                                </thead>
+                                <tbody id="adminUsersBody"></tbody>
+                            </table>
+                        </section>
+
+                        <section class="card admin-panel admin-logs-panel">
+                            <h3 data-i18n="adminPage.auditBlockTitle"></h3>
+                            <div class="admin-log-filters">
+                                <div class="admin-log-filters-main">
+                                    <select id="adminLogSourceSelect">
+                                        <option value="parsing" data-i18n="adminPage.logSourceParsing"></option>
+                                        <option value="errors" data-i18n="adminPage.logSourceErrors"></option>
+                                        <option value="actions" data-i18n="adminPage.logSourceActions"></option>
+                                    </select>
+                                    <input type="text" id="adminParsingPipelineInput" data-i18n-placeholder="adminPage.parsingPipelinePlaceholder" placeholder="">
+                                </div>
+                                <div class="admin-log-filters-secondary">
+                                    <select id="adminParsingLoginSelect"></select>
+                                    <input type="date" id="adminParsingDateFrom">
+                                    <input type="date" id="adminParsingDateTo">
+                                    <select id="adminParsingFileTypeSelect">
+                                        <option value="" data-i18n="adminPage.parsingFileTypeAny"></option>
+                                        <option value="pdf">PDF</option>
+                                        <option value="excel">Excel</option>
+                                        <option value="word">Word</option>
+                                        <option value="unknown" data-i18n="adminPage.parsingFileTypeUnknown"></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="inline-actions admin-log-actions">
+                                <button type="button" id="adminAuditRefreshBtn" class="btn-primary" data-i18n="adminPage.auditRefreshButton"></button>
+                                <button type="button" id="adminParsingResetBtn" class="btn-muted" data-i18n="adminPage.parsingResetButton"></button>
+                                <button type="button" id="adminParsingDownloadBtn" class="btn-secondary" data-i18n="adminPage.parsingDownloadButton"></button>
+                                <button type="button" id="adminParsingClearBtn" class="btn-danger" data-i18n="adminPage.parsingClearButton"></button>
+                            </div>
+                            <div class="section-help admin-log-help" data-i18n="adminPage.auditHelp"></div>
+                            <div class="inline-actions admin-log-pagination">
+                                <button type="button" id="adminParsingPrevBtn" class="btn-muted" data-i18n="adminPage.parsingPrevButton"></button>
+                                <button type="button" id="adminParsingNextBtn" class="btn-muted" data-i18n="adminPage.parsingNextButton"></button>
+                                <span id="adminParsingPageInfo" class="status-text"></span>
+                            </div>
+                            <ul id="adminAuditList"></ul>
+                        </section>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="/js/app.js?v=checklist-ui-2"></script>
+</body>
+</html>

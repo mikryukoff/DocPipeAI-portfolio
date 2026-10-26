@@ -1,0 +1,95 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: docpipeai-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - pipeline-network
+
+  adminer:
+    image: adminer:latest
+    container_name: docpipeai-adminer
+    restart: always
+    profiles:
+      - tools
+    depends_on:
+      - db
+    ports:
+      - "127.0.0.1:8080:8080"
+    networks:
+      - pipeline-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: docpipeai-backend
+    networks:
+      - pipeline-network
+    restart: always
+    depends_on:
+      - db
+      # - ollama
+    ports:
+      # Backend only for local reverse-proxy (Nginx TLS on :8000).
+      - "127.0.0.1:8001:8000"
+    env_file:
+      - .env
+    # environment:
+    #   OLLAMA_HOST: ${OLLAMA_HOST:-http://ollama:11434}
+    #   HF_HUB_DISABLE_HTTPX_CLIENT_CACHE: ${HF_HUB_DISABLE_HTTPX_CLIENT_CACHE:-1}
+    #   HF_ENDPOINT: ${HF_ENDPOINT:-https://hf-mirror.com}
+    #   YOLO_CONFIG_DIR: ${YOLO_CONFIG_DIR:-/tmp/Ultralytics}
+    volumes:
+      - ./data:/app/data
+      - ./backend:/app/backend
+      - ./backend/alembic:/app/backend/alembic
+      - ./backend/alembic.ini:/app/backend/alembic.ini
+  
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: ocr_ollama
+  #   networks:
+  #     - pipeline-network
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   restart: unless-stopped
+  #   # Запуск на GPU (опционально)
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: "all" 
+  #             capabilities: [gpu]
+
+  # # Вспомогательный сервис: скачивает модель glm-ocr при первом запуске
+  # ollama-pull:
+  #   image: ollama/ollama:latest
+  #   container_name: ocr_ollama_pull
+  #   depends_on:
+  #     - ollama
+  #   networks:
+  #     - pipeline-network
+  #   environment:
+  #     - OLLAMA_HOST=http://ollama:11434
+  #   command: pull glm-ocr
+
+volumes:
+  mysql_data:
+  # ollama_data:
+
+networks:
+  pipeline-network:
+    name: pipeline-network

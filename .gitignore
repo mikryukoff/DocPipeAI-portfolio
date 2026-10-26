@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.venv
+.pytest_cache
+
+# Secrets & local env
+.env
+*.crt
+*.key
+*.enc
+
+# User / runtime data (never publish)
+data/users/
+data/logs/
+data/ocr/
+data/debug/
+data/word_imports/
+data/processed/
+*.jsonl
+
+# Binary uploads / exports (demo Word template intentionally omitted)
+*.xlsx
+*.pdf
+*.docx
+*.png
+*.zip
+*.rar
+
+# Editor
+.cursor
